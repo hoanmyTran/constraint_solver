@@ -11,6 +11,7 @@ package org.chocosolver.examples.integer;
 
 import org.chocosolver.examples.AbstractProblem;
 import org.chocosolver.solver.Model;
+import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.variables.IntVar;
 
 /**
@@ -101,7 +102,13 @@ public class Zebra extends AbstractProblem {
 
     @Override
     public void solve() {
-        while (model.getSolver().solve()) {
+        try {
+            model.getSolver().propagate();
+        } catch (ContradictionException e) {
+            e.printStackTrace();
+        }
+
+        /*while (model.getSolver().solve()) */{
             int z = zebra.getValue();
             int n = -1;
             for (int i = 0; i < SIZE; i++) {
