@@ -102,15 +102,13 @@ public class Zebra extends AbstractProblem {
 
     @Override
     public void solve() {
-        System.out.println(model);
-        System.out.println("--------------------------------------------------------");
         try {
             model.getSolver().propagate();
         } catch (ContradictionException e) {
             e.printStackTrace();
         }
 
-        while (model.getSolver().solve()) {
+        /*while (model.getSolver().solve()) */{
             int z = zebra.getValue();
             int n = -1;
             for (int i = 0; i < SIZE; i++) {
