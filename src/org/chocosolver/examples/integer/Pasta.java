@@ -11,8 +11,11 @@ package org.chocosolver.examples.integer;
 
 import org.chocosolver.examples.AbstractProblem;
 import org.chocosolver.solver.Model;
+import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.variables.IntVar;
+
+import java.util.Iterator;
 
 /**
  * Simple example which solve Zebra puzzle
@@ -38,7 +41,6 @@ public class Pasta extends AbstractProblem {
 
     @Override
     public void buildModel() {
-
 
         model = new Model();
 
@@ -71,10 +73,6 @@ public class Pasta extends AbstractProblem {
         model.allDifferent(attr[NOM]).post();
         model.allDifferent(attr[PASTA]).post();
 
-
-
-
-
         capellini.lt(arrabiata_sauce).post();//1
         tagliolini.gt(Angie).post();//2
         tagliolini.lt(marinara_sauce).post();//3
@@ -91,13 +89,50 @@ public class Pasta extends AbstractProblem {
 
     @Override
     public void solve() {
+        // model's values
+        System.out.println("---------------Model's values----------------");
+        System.out.println(model);
+        for(int i=0; i < SIZE; i++) {
+            for(int j=0; j < SIZE; j++) {
+                System.out.println("-----------Index's values : [i,j]=["+i+","+j+"]--------------");
+                Iterator iterator = this.attr[i][j].iterator();
+
+                // for each possible value of attr
+                while(iterator.hasNext()) {
+                    System.out.println("-- iteration");
+                    Integer priceIndex = (Integer) iterator.next();
+                    System.out.println("priceIndex: " + priceIndex + " ; hasNext? "+ iterator.hasNext());
+                    // creation of constraint
+                    Constraint constraint = this.attr[i][j].eq(priceIndex).decompose();
+                    model.post(constraint);
+
+                    try {
+                        // save attr's state
+                        //model.getSolver().getEnvironment().worldPush();
+                        model.getSolver().propagate();
+                    } catch (ContradictionException e) {
+                        System.out.println("-----------OUPS-----------");
+                        e.printStackTrace();
+                        //model.getSolver().getEnvironment().worldPop();
+                        //model.unpost(constraint);
+                    }
+                }
+                System.out.println(model);
+            }
+        }
+
+
+        // model's values
+        System.out.println("---------------Model's values----------------");
+        System.out.println(model);
+        print(attr);
 //        try {
 //            model.getSolver().propagate();//.getEnvironement.worldpush , world pup
 //        } catch (ContradictionException e) {
 //            e.printStackTrace();
 //        }
 
-        while (model.getSolver().solve()) {
+//        while (model.getSolver().solve()) {
 //            int z = zebra.getValue();
 //            int n = -1;
 //            for (int i = 0; i < SIZE; i++) {
@@ -109,15 +144,12 @@ public class Pasta extends AbstractProblem {
 //                System.out.printf("%n%-20s%s%s%s%n", "",
 //                        "============> The pasta is owned by the ", sAttr[NOM][n], " <============");
 //            }
-            System.out.println("1");
-            print(attr);
-        }
-        System.out.println("1");
+//            print(attr);
+//        }
+
 
     }
     private void print(IntVar[][] pos) {
-        System.out.println("1");
-
         System.out.printf("%-20s%-20s%-20s%-20s%-20s%n", "",
                 sCost[0], sCost[1], sCost[2], sCost[3]);
 
@@ -135,11 +167,9 @@ public class Pasta extends AbstractProblem {
             }
             System.out.println();
         }
-        System.out.println("1");
     }
 
     public static void main(String[] args) {
-        System.out.println("aaaaaa");
         new Pasta().execute(args);
     }
 }
