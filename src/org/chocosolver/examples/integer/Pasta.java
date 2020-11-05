@@ -26,7 +26,7 @@ public class Pasta extends AbstractProblem {
     //private final String[] sPasta = {"capellini", "farfaelle", "tagliolini", "rotini"}; // type of pasta
     private final String[] sCost = {"4 ", "8", "12", "16"}; // type of pasta
     private final int SIZE = sCost.length;
-    private final int NOM = 0, SAUCE = 1, PRIX = 2, PASTA = 3;
+    private final int NOM = 0, SAUCE = 1, PASTA = 2;
     private final String [] sAttrTitle = {"Nom", "Sauce","Pasta"};
     private final String [][] sAttr = {
             {"Angie", "Damon", "Claudia", "Elisa"},
@@ -72,37 +72,17 @@ public class Pasta extends AbstractProblem {
         model.allDifferent(attr[PASTA]).post();
 
 
-        Angie.eq(capellini).post();
+
+
+
         capellini.lt(arrabiata_sauce).post();//1
         tagliolini.gt(Angie).post();//2
         tagliolini.lt(marinara_sauce).post();//3
-        rotini.gt(Damon).or(rotini.gt(Damon)).post();//4
-
-        tagliolini.ne(marinara_sauce).post();//3
-        //Angie.ne(tagliolini).post();//2
-        Claudia.ne(puttanesca_sauce).post();//indice 4
-        Damon.eq(capellini).or(Claudia.eq(capellini)).post();//indice6
-        Angie.eq(arrabiata_sauce).or(Elisa.eq(arrabiata_sauce)).post();//indice7
-        farfaelle.eq(arrabiata_sauce).post();//indice8
-
-
-        //Elisa.eq(capellini).or(Claudia.eq(capellini)).post();//exemple or
-
-
-//        eng.eq(red).post(); // 2. the Englishman lives in the red house
-//        spain.eq(dog).post(); // 3. the Spaniard owns a dog
-//        coffee.eq(green).post(); // 4. coffee is drunk in the green house
-//        ukr.eq(tea).post(); // 5. the Ukr drinks tea
-//        ivory.add(1).eq(green).post(); // 6. green house is to right of ivory house
-//        oldGold.eq(snails).post(); // 7. oldGold smoker owns snails
-//        kools.eq(yellow).post(); // 8. kools are smoked in the yellow house
-//        milk.eq(3).post(); // 9. milk is drunk in the middle house
-//        norge.eq(1).post(); // 10. Norwegian lives in first house on the left
-//        chest.dist(fox).eq(1).post(); // 11. chesterfield smoker lives next door to the fox owner
-//        kools.dist(horse).eq(1).post(); // 12. kools smoker lives next door to the horse owner
-//        lucky.eq(oj).post(); // 13. lucky smoker drinks orange juice
-//        jap.eq(parly).post(); // 14. Japanese smokes parliament
-//        norge.dist(blue).eq(1).post(); // 15. Norwegian lives next to the blue house
+        Claudia.ne(puttanesca_sauce).post();//4
+        rotini.gt(Damon).or(rotini.lt(Damon)).post();//5
+        capellini.eq(Damon).or(capellini.eq(Claudia)).post();//6
+        arrabiata_sauce.eq(Angie).or(arrabiata_sauce.eq(Elisa)).post();//7
+        arrabiata_sauce.eq(farfaelle).post();//8
     }
 
     @Override
