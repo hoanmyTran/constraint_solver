@@ -56,20 +56,14 @@ public class Pasta extends AbstractProblem {
         IntVar marinara_sauce = attr[SAUCE][2];
         IntVar puttanesca_sauce  = attr[SAUCE][3];
 
-//        IntVar four = attr[PRIX][0];
-//        IntVar eight   = attr[PRIX][1];
-//        IntVar twelve   = attr[PRIX][2];
-//        IntVar sixteen   = attr[PRIX][3];
-
         IntVar capellini = attr[PASTA][0];
         IntVar farfaelle   = attr[PASTA][1];
         IntVar tagliolini   = attr[PASTA][2];
         IntVar rotini   = attr[PASTA][3];
 
-       zebra  = attr[NOM][0];
+        zebra  = attr[NOM][0];
 
         model.allDifferent(attr[SAUCE]).post();
-       // model.allDifferent(attr[PRIX]).post();
         model.allDifferent(attr[NOM]).post();
         model.allDifferent(attr[PASTA]).post();
 
@@ -77,7 +71,8 @@ public class Pasta extends AbstractProblem {
         tagliolini.gt(Angie).post();//2
         tagliolini.lt(marinara_sauce).post();//3
         Claudia.ne(puttanesca_sauce).post();//4
-        rotini.gt(Damon).or(rotini.lt(Damon)).post();//5
+        rotini.dist(Damon).eq(2).post(); // new 5
+        //rotini.gt(Damon).or(rotini.lt(Damon)).post();//5
         capellini.eq(Damon).or(capellini.eq(Claudia)).post();//6
         arrabiata_sauce.eq(Angie).or(arrabiata_sauce.eq(Elisa)).post();//7
         arrabiata_sauce.eq(farfaelle).post();//8
@@ -89,9 +84,13 @@ public class Pasta extends AbstractProblem {
 
     @Override
     public void solve() {
-        // model's values
-        System.out.println("---------------Model's values----------------");
-        System.out.println(model);
+        try {
+            model.getSolver().propagate();
+        } catch (ContradictionException e) {
+            System.out.println("-----------OUPS-----------");
+            e.printStackTrace();
+        }
+
         for(int i=0; i < SIZE; i++) {
             for(int j=0; j < SIZE; j++) {
                 System.out.println("-----------Index's values : [i,j]=["+i+","+j+"]--------------");
@@ -99,32 +98,26 @@ public class Pasta extends AbstractProblem {
 
                 // for each possible value of attr
                 while(iterator.hasNext()) {
-                    System.out.println("-- iteration");
                     Integer priceIndex = (Integer) iterator.next();
-                    System.out.println("priceIndex: " + priceIndex + " ; hasNext? "+ iterator.hasNext());
                     // creation of constraint
                     Constraint constraint = this.attr[i][j].eq(priceIndex).decompose();
                     model.post(constraint);
 
                     try {
                         // save attr's state
-                        //model.getSolver().getEnvironment().worldPush();
+                        model.getSolver().getEnvironment().worldPush();
                         model.getSolver().propagate();
+                        System.out.println(model);
                     } catch (ContradictionException e) {
                         System.out.println("-----------OUPS-----------");
                         e.printStackTrace();
-                        //model.getSolver().getEnvironment().worldPop();
-                        //model.unpost(constraint);
+                        model.getSolver().getEnvironment().worldPop();
+                        model.unpost(constraint);
                     }
                 }
-                System.out.println(model);
             }
         }
 
-
-        // model's values
-        System.out.println("---------------Model's values----------------");
-        System.out.println(model);
         print(attr);
 //        try {
 //            model.getSolver().propagate();//.getEnvironement.worldpush , world pup
@@ -153,16 +146,13 @@ public class Pasta extends AbstractProblem {
         System.out.printf("%-20s%-20s%-20s%-20s%-20s%n", "",
                 sCost[0], sCost[1], sCost[2], sCost[3]);
 
-        for (int i = 0; i < SIZE; i++) {
+        for (int i = 0; i < SIZE-1; i++) {
             String[] sortedLine = new String[SIZE];
             for (int j = 0; j < SIZE; j++) {
-
                 sortedLine[pos[i][j].getValue() - 1] = sAttr[i][j];
             }
             System.out.printf("%-20s", sAttrTitle[i]);
             for (int j = 0; j < SIZE; j++) {
-
-
                 System.out.printf("%-20s", sortedLine[j]);
             }
             System.out.println();
