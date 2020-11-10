@@ -15,7 +15,10 @@ import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.variables.IntVar;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Simple example which solve Zebra puzzle
@@ -37,53 +40,84 @@ public class Pasta extends AbstractProblem {
             {"capellini", "farfaelle", "tagliolini", "rotini"}
     };
     private IntVar[][] attr;
+    IntVar[][] attrBis;
+    Model modelBis ;
     private IntVar zebra;
 
     @Override
     public void buildModel() {
 
         model = new Model();
+        modelBis = new Model();
 
         attr = model.intVarMatrix("attr", SIZE, SIZE, 1, SIZE);
+        attrBis=modelBis.intVarMatrix("attr", SIZE  , SIZE, 1, SIZE);;
 
         IntVar Angie   = attr[NOM][0];
         IntVar Damon = attr[NOM][1];
         IntVar Claudia   = attr[NOM][2];
         IntVar Elisa = attr[NOM][3];
 
+        IntVar AngieBis   = attrBis[NOM][0];
+        IntVar DamonBis = attrBis[NOM][1];
+        IntVar ClaudiaBis   = attrBis[NOM][2];
+        IntVar ElisaBis = attrBis[NOM][3];
+
         IntVar the_other_type1    = attr[SAUCE][0];
         IntVar arrabiata_sauce   = attr[SAUCE][1];
         IntVar marinara_sauce = attr[SAUCE][2];
         IntVar puttanesca_sauce  = attr[SAUCE][3];
+
+        IntVar the_other_type1Bis    = attrBis[SAUCE][0];
+        IntVar arrabiata_sauceBis   = attrBis[SAUCE][1];
+        IntVar marinara_sauceBis = attrBis[SAUCE][2];
+        IntVar puttanesca_sauceBis  = attrBis[SAUCE][3];
 
         IntVar capellini = attr[PASTA][0];
         IntVar farfaelle   = attr[PASTA][1];
         IntVar tagliolini   = attr[PASTA][2];
         IntVar rotini   = attr[PASTA][3];
 
-        zebra  = attr[NOM][0];
+        IntVar capelliniBis = attrBis[PASTA][0];
+        IntVar farfaelleBis   = attrBis[PASTA][1];
+        IntVar taglioliniBis   = attrBis[PASTA][2];
+        IntVar rotiniBis   = attrBis[PASTA][3];
+
+
 
         model.allDifferent(attr[SAUCE]).post();
         model.allDifferent(attr[NOM]).post();
         model.allDifferent(attr[PASTA]).post();
+
+        modelBis.allDifferent(attrBis[SAUCE]).post();
+        modelBis.allDifferent(attrBis[NOM]).post();
+        modelBis.allDifferent(attrBis[PASTA]).post();
 
         capellini.lt(arrabiata_sauce).post();//1
         tagliolini.gt(Angie).post();//2
         tagliolini.lt(marinara_sauce).post();//3
         Claudia.ne(puttanesca_sauce).post();//4
         rotini.dist(Damon).eq(2).post(); // new 5
-        //rotini.gt(Damon).or(rotini.lt(Damon)).post();//5
         capellini.eq(Damon).or(capellini.eq(Claudia)).post();//6
         arrabiata_sauce.eq(Angie).or(arrabiata_sauce.eq(Elisa)).post();//7
         arrabiata_sauce.eq(farfaelle).post();//8
+
+        capelliniBis.lt(arrabiata_sauceBis).post();//1
+        taglioliniBis.gt(AngieBis).post();//2
+        taglioliniBis.lt(marinara_sauceBis).post();//3
+        ClaudiaBis.ne(puttanesca_sauceBis).post();//4
+        rotiniBis.dist(DamonBis).eq(2).post(); // new 5
+        capelliniBis.eq(DamonBis).or(capelliniBis.eq(ClaudiaBis)).post();//6
+        arrabiata_sauceBis.eq(AngieBis).or(arrabiata_sauceBis.eq(ElisaBis)).post();//7
+        arrabiata_sauceBis.eq(farfaelleBis).post();//8
+
     }
 
     @Override
     public void configureSearch() {
     }
 
-    @Override
-    public void solve() {
+    public void oldSolve() {
         try {
             model.getSolver().propagate();
         } catch (ContradictionException e) {
@@ -139,9 +173,13 @@ public class Pasta extends AbstractProblem {
 //            }
 //            print(attr);
 //        }
-
-
     }
+
+    @Override
+    public void solve() {
+        candidateExplanation();
+    }
+
     private void print(IntVar[][] pos) {
         System.out.printf("%-20s%-20s%-20s%-20s%-20s%n", "",
                 sCost[0], sCost[1], sCost[2], sCost[3]);
@@ -161,5 +199,44 @@ public class Pasta extends AbstractProblem {
 
     public static void main(String[] args) {
         new Pasta().execute(args);
+    }
+
+    public void candidateExplanation(){
+//        List <IntVar>candidates= new ArrayList<IntVar>();
+
+        List <IntVar>IdifJ= new ArrayList<IntVar>();
+        IdifJ = getDifferences(attr,attrBis);
+
+
+    }
+
+    private List<IntVar> getDifferences(IntVar[][] previousAttr,IntVar[][] actualAttr){
+        print(previousAttr);
+        print(actualAttr);
+        List <IntVar> differences = new ArrayList<IntVar>();
+        for(int i = 0 ; i<SIZE -1;i++){
+            for (int j=0;j<SIZE;j++){
+                //casting both matrix to array list in order to compare
+                Iterator<Integer> previousAttrIt = previousAttr[i][j].iterator();
+                ArrayList<Integer>previousValuesList = new ArrayList<Integer>();
+
+                while(previousAttrIt.hasNext()){
+
+                   previousValuesList.add(previousAttrIt.next());
+                }
+                Iterator<Integer> acualAttrIt = actualAttr[i][j].iterator();
+                ArrayList<Integer>actualValuesList = new ArrayList<Integer>();
+                while(previousAttrIt.hasNext()){
+                    actualValuesList.add(acualAttrIt.next());
+                }
+
+                //comparaison
+                if(!previousValuesList.equals(actualValuesList)){
+                    differences.add(actualAttr[i][j]);
+                }
+            }
+        }
+        System.out.println(previousAttr.length +"::::"+actualAttr.length+"::::"+differences.size());
+        return differences;
     }
 }
