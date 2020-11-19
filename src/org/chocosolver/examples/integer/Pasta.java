@@ -121,7 +121,6 @@ public class Pasta extends AbstractProblem {
         try {
             model.getSolver().propagate();
         } catch (ContradictionException e) {
-            System.out.println("-----------OUPS-----------");
             e.printStackTrace();
         }
 
@@ -152,7 +151,7 @@ public class Pasta extends AbstractProblem {
             }
         }
 
-        print(attr);
+      //  print(attr);
 //        try {
 //            model.getSolver().propagate();//.getEnvironement.worldpush , world pup
 //        } catch (ContradictionException e) {
@@ -203,16 +202,59 @@ public class Pasta extends AbstractProblem {
 
     public void candidateExplanation(){
 //        List <IntVar>candidates= new ArrayList<IntVar>();
-
         List <IntVar>IdifJ= new ArrayList<IntVar>();
+        try {
+            model.getSolver().propagate();
+        } catch (ContradictionException e) {
+            e.printStackTrace();
+        }
         IdifJ = getDifferences(attr,attrBis);
+        ArrayList <Constraint> constraints=new ArrayList<Constraint>() ;
+        ArrayList <Constraint> unpostedConstraint=new ArrayList<Constraint>() ;
 
+        Constraint constraintsBis [] =  modelBis.getCstrs();
+
+        for(int i=0; i < SIZE; i++) {
+            for(int j=0; j < SIZE; j++) {
+                //System.out.println("-----------Index's values : [i,j]=["+i+","+j+"]--------------");
+                Iterator iterator = this.attr[i][j].iterator();
+
+                // for each possible value of attr
+                while(iterator.hasNext()) {
+                    Integer priceIndex = (Integer) iterator.next();
+                    // creation of constraint
+                    Constraint constraint = this.attr[i][j].eq(priceIndex).decompose();
+                    model.post(constraint);
+
+                    try {
+                        // save attr's state
+                        model.getSolver().getEnvironment().worldPush();
+                        model.getSolver().propagate();
+                        //constraints[constraints.length-1]
+                        constraints.add(constraint);
+                    } catch (ContradictionException e) {
+                        System.out.println("-----------OUPS-----------");
+                        e.printStackTrace();
+                        model.getSolver().getEnvironment().worldPop();
+                        unpostedConstraint.add(constraint);
+                        model.unpost(constraint);
+                    }
+                }
+            }
+        }
+        Iterator iterator = constraints.iterator();
+        while(iterator.hasNext()){
+            System.out.println(iterator.next());
+        }
+        System.out.println(":::::::::::::::");
+        Iterator iteratorUnpost = unpostedConstraint.iterator();
+        while(iteratorUnpost.hasNext()){
+            System.out.println(iteratorUnpost.next());
+        }
 
     }
 
     private List<IntVar> getDifferences(IntVar[][] previousAttr,IntVar[][] actualAttr){
-        print(previousAttr);
-        print(actualAttr);
         List <IntVar> differences = new ArrayList<IntVar>();
         for(int i = 0 ; i<SIZE -1;i++){
             for (int j=0;j<SIZE;j++){
@@ -226,7 +268,7 @@ public class Pasta extends AbstractProblem {
                 }
                 Iterator<Integer> acualAttrIt = actualAttr[i][j].iterator();
                 ArrayList<Integer>actualValuesList = new ArrayList<Integer>();
-                while(previousAttrIt.hasNext()){
+                while(acualAttrIt.hasNext()){
                     actualValuesList.add(acualAttrIt.next());
                 }
 
@@ -236,7 +278,6 @@ public class Pasta extends AbstractProblem {
                 }
             }
         }
-        System.out.println(previousAttr.length +"::::"+actualAttr.length+"::::"+differences.size());
         return differences;
     }
 }
