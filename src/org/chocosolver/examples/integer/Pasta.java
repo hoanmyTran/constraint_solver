@@ -209,6 +209,7 @@ public class Pasta extends AbstractProblem {
             e.printStackTrace();
         }
         IdifJ = getDifferences(attr,attrBis);
+        System.out.println(IdifJ);
         ArrayList <Constraint> constraints=new ArrayList<Constraint>() ;
         ArrayList <Constraint> unpostedConstraint=new ArrayList<Constraint>() ;
 
@@ -230,6 +231,8 @@ public class Pasta extends AbstractProblem {
                         // save attr's state
                         model.getSolver().getEnvironment().worldPush();
                         model.getSolver().propagate();
+                        IdifJ = getDifferences(attr,attrBis);
+                        System.out.println(IdifJ);
                         //constraints[constraints.length-1]
                         constraints.add(constraint);
                     } catch (ContradictionException e) {
@@ -240,17 +243,20 @@ public class Pasta extends AbstractProblem {
                         model.unpost(constraint);
                     }
                 }
+                print(attrBis);
+                print(attr);
+
             }
         }
-        Iterator iterator = constraints.iterator();
-        while(iterator.hasNext()){
-            System.out.println(iterator.next());
-        }
-        System.out.println(":::::::::::::::");
-        Iterator iteratorUnpost = unpostedConstraint.iterator();
-        while(iteratorUnpost.hasNext()){
-            System.out.println(iteratorUnpost.next());
-        }
+//        Iterator iterator = constraints.iterator();
+//        while(iterator.hasNext()){
+//            System.out.println(iterator.next());
+//        }
+//        System.out.println(":::::::::::::::");
+//        Iterator iteratorUnpost = unpostedConstraint.iterator();
+//        while(iteratorUnpost.hasNext()){
+//            System.out.println(iteratorUnpost.next());
+//        }
 
     }
 
